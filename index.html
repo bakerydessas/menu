@@ -344,7 +344,7 @@
                     </div>
                     <div class="form-group">
                         <label>Horário</label>
-                        <input type="time" id="cliente_hora">
+                        <input type="text" id="cliente_hora" placeholder="00:00" inputmode="numeric" oninput="maskHora(this)" maxlength="5">
                     </div>
                 </div>
             </div>
@@ -378,7 +378,6 @@
 
         if(screen === 'home') document.getElementById('home-screen').style.display = 'flex';
         if(screen === 'produtos') document.getElementById('produtos-screen').style.display = 'block';
-        // Alterado para block para evitar bugs de renderização no teclado/pickers de data e hora do celular
         if(screen === 'encomendas') document.getElementById('encomendas-screen').style.display = 'block';
         
         window.scrollTo(0,0);
@@ -416,6 +415,13 @@
     }
 
     function closeOverlay(id) { document.getElementById(id).style.display = 'none'; }
+
+    // ================= MÁSCARA DE HORÁRIO PARA INSTAGRAM =================
+    function maskHora(i) {
+        let v = i.value.replace(/\D/g, '');
+        if (v.length > 2) v = v.substring(0, 2) + ':' + v.substring(2, 4);
+        i.value = v;
+    }
 
     // ================= LÓGICA PRODUTOS (FIREBASE E CARRINHO) =================
     const firebaseConfig = {
@@ -570,7 +576,6 @@
         let rawData = document.getElementById('cliente_data').value;
         const hora = document.getElementById('cliente_hora').value;
 
-        // Funcao auxiliar para pegar valores marcados
         const getSelecionados = (nomeDoCampo) => {
             const marcados = document.querySelectorAll(`input[name="${nomeDoCampo}"]:checked`);
             let valores = [];
@@ -585,17 +590,15 @@
         const cobertura = getSelecionados('cobertura');
         const tamanho = getSelecionados('tamanho');
 
-        // VALIDAÇÃO CIRÚRGICA DE TODOS OS CAMPOS
         if (!nome || !rawData || !hora || massa === 'Não selecionado' || recheio === 'Não selecionado' || cobertura === 'Não selecionado' || tamanho === 'Não selecionado') {
-            showInstaModal('Dados Incompletos', 'Por favor, preencha todos os campos: nome, massa, recheio, cobertura, tamanho e também a data/horário para agendamento.', '📝');
+            showInstaModal('Dados Incompletos', 'Por favor, preencha todos os campos para continuar.', '📝');
             return;
         }
 
-        // Formata data
         let dataFormatada = "";
-        if(rawData) {
+        if(rawData && rawData.includes('-')) {
             const partesData = rawData.split('-');
-            dataFormatada = `${partesData[2]}/${partesPartes[1]}/${partesData[0]}`;
+            dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
         }
 
         let mensagem = `*NOVA ENCOMENDA - Dessa's Bakery* 🧁\n\n`;
