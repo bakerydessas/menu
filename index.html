@@ -78,7 +78,7 @@
         /* ================= BOTÃO VOLTAR FLUTUANTE ================= */
         .btn-voltar-float {
             position: fixed;
-            bottom: 95px; /* Fica logo acima do botão principal de pedido */
+            bottom: 95px; 
             right: 20px;
             width: 55px;
             height: 55px;
@@ -133,8 +133,8 @@
         .btn-whatsapp-prod { background: var(--insta-gradient); color: white; border: none; width: 100%; padding: 16px; border-radius: 30px; font-weight: 700; box-shadow: 0 8px 20px rgba(212, 35, 102, 0.3); display: flex; justify-content: center; align-items: center; gap: 10px; cursor: pointer; transition: transform 0.2s;}
         .btn-whatsapp-prod:active { transform: scale(0.95); }
 
-        /* Modais Instagram */
-        .insta-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 4000; justify-content: center; align-items: center; }
+        /* Modais Estilo Instagram (Globais) */
+        .insta-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center; }
         .insta-popup { background: white; width: 85%; max-width: 300px; border-radius: 15px; padding: 25px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .insta-popup input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #dbdbdb; background: #fafafa; border-radius: 8px; text-align: center; font-size: 16px; }
@@ -150,7 +150,6 @@
         #encomendas-screen {
             display: none;
             background-color: #fafafa;
-            justify-content: center;
             min-height: 100vh;
         }
 
@@ -198,6 +197,15 @@
 </head>
 <body>
 
+<div id="insta-modal-overlay" class="insta-overlay">
+    <div class="insta-popup">
+        <div id="insta-modal-icon" style="font-size: 40px; margin-bottom: 10px;">🧁</div>
+        <div id="insta-modal-title" style="font-weight: 800; font-size: 1.1rem;">Mensagem</div>
+        <p id="insta-modal-text" style="font-size: 0.9rem; color: #8e8e8e; margin: 10px 0 20px;"></p>
+        <div id="insta-modal-actions"></div>
+    </div>
+</div>
+
 <div id="home-screen">
     <h1 class="home-title">Dessa's Bakery</h1>
     <button class="btn-home" onclick="navTo('produtos')">Produtos</button>
@@ -208,15 +216,6 @@
     <header>
         <h1 onclick="handleTitleClick()">DESSA'S BAKERY</h1>
     </header>
-
-    <div id="insta-modal-overlay" class="insta-overlay">
-        <div class="insta-popup">
-            <div id="insta-modal-icon" style="font-size: 40px; margin-bottom: 10px;">🧁</div>
-            <div id="insta-modal-title" style="font-weight: 800; font-size: 1.1rem;">Mensagem</div>
-            <p id="insta-modal-text" style="font-size: 0.9rem; color: #8e8e8e; margin: 10px 0 20px;"></p>
-            <div id="insta-modal-actions"></div>
-        </div>
-    </div>
 
     <div id="login-overlay" class="insta-overlay">
         <div class="insta-popup">
@@ -379,29 +378,13 @@
 
         if(screen === 'home') document.getElementById('home-screen').style.display = 'flex';
         if(screen === 'produtos') document.getElementById('produtos-screen').style.display = 'block';
-        if(screen === 'encomendas') document.getElementById('encomendas-screen').style.display = 'flex';
+        // Alterado para block para evitar bugs de renderização no teclado/pickers de data e hora do celular
+        if(screen === 'encomendas') document.getElementById('encomendas-screen').style.display = 'block';
         
         window.scrollTo(0,0);
     }
 
-    // ================= LÓGICA PRODUTOS (FIREBASE E CARRINHO) =================
-    const firebaseConfig = {
-        apiKey: "AIzaSyBcemxWaUCjkBvxEcxCQGPXC_fSWdP8A34",
-        authDomain: "dessa-s-bakery.firebaseapp.com",
-        databaseURL: "https://dessa-s-bakery-default-rtdb.firebaseio.com",
-        projectId: "dessa-s-bakery",
-        storageBucket: "dessa-s-bakery.firebasestorage.app",
-        messagingSenderId: "245997337616",
-        appId: "1:245997337616:web:3d89bbae0cb4a9fd95de95"
-    };
-    if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-    const db = firebase.database();
-    
-    let isAdmin = false;
-    let menuItems = [];
-    let cart = [];
-    let titleClicks = 0;
-
+    // ================= FUNÇÃO DE MODAL GLOBAL PERSONALIZADO =================
     function showInstaModal(title, text, icon, type = 'ok', onConfirm = null) {
         document.getElementById('insta-modal-title').innerText = title;
         document.getElementById('insta-modal-text').innerText = text;
@@ -433,6 +416,24 @@
     }
 
     function closeOverlay(id) { document.getElementById(id).style.display = 'none'; }
+
+    // ================= LÓGICA PRODUTOS (FIREBASE E CARRINHO) =================
+    const firebaseConfig = {
+        apiKey: "AIzaSyBcemxWaUCjkBvxEcxCQGPXC_fSWdP8A34",
+        authDomain: "dessa-s-bakery.firebaseapp.com",
+        databaseURL: "https://dessa-s-bakery-default-rtdb.firebaseio.com",
+        projectId: "dessa-s-bakery",
+        storageBucket: "dessa-s-bakery.firebasestorage.app",
+        messagingSenderId: "245997337616",
+        appId: "1:245997337616:web:3d89bbae0cb4a9fd95de95"
+    };
+    if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+    const db = firebase.database();
+    
+    let isAdmin = false;
+    let menuItems = [];
+    let cart = [];
+    let titleClicks = 0;
 
     function handleTitleClick() {
         titleClicks++;
@@ -552,7 +553,7 @@
         });
     }
 
-    // ================= LÓGICA ENCOMENDAS (CÓDIGO 1) =================
+    // ================= LÓGICA ENCOMENDAS (AJUSTADA) =================
     function openModal() { document.getElementById('modalEntrega').style.display = 'flex'; }
     function closeModal() { document.getElementById('modalEntrega').style.display = 'none'; }
     
@@ -566,20 +567,10 @@
         const nome = document.getElementById('cliente_nome').value;
         const tipoEntrega = document.getElementById('tipo_entrega_val').value;
         const endereco = document.getElementById('cliente_endereco').value;
-        let data = document.getElementById('cliente_data').value;
+        let rawData = document.getElementById('cliente_data').value;
         const hora = document.getElementById('cliente_hora').value;
 
-        if(data) {
-            const partesData = data.split('-');
-            data = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
-        }
-
-        if (!nome) {
-            alert("Por favor, preencha o seu nome!");
-            document.getElementById('cliente_nome').focus();
-            return;
-        }
-
+        // Funcao auxiliar para pegar valores marcados
         const getSelecionados = (nomeDoCampo) => {
             const marcados = document.querySelectorAll(`input[name="${nomeDoCampo}"]:checked`);
             let valores = [];
@@ -594,15 +585,27 @@
         const cobertura = getSelecionados('cobertura');
         const tamanho = getSelecionados('tamanho');
 
+        // VALIDAÇÃO CIRÚRGICA DE TODOS OS CAMPOS
+        if (!nome || !rawData || !hora || massa === 'Não selecionado' || recheio === 'Não selecionado' || cobertura === 'Não selecionado' || tamanho === 'Não selecionado') {
+            showInstaModal('Dados Incompletos', 'Por favor, preencha todos os campos: nome, massa, recheio, cobertura, tamanho e também a data/horário para agendamento.', '📝');
+            return;
+        }
+
+        // Formata data
+        let dataFormatada = "";
+        if(rawData) {
+            const partesData = rawData.split('-');
+            dataFormatada = `${partesData[2]}/${partesPartes[1]}/${partesData[0]}`;
+        }
+
         let mensagem = `*NOVA ENCOMENDA - Dessa's Bakery* 🧁\n\n`;
-        
         mensagem += `*👤 CLIENTE:*\n`;
         mensagem += `Nome: ${nome}\n`;
         mensagem += `Tipo: ${tipoEntrega}\n`;
         if(tipoEntrega === 'Entrega') {
             mensagem += `Endereço: ${endereco || 'Não informado'}\n`;
         }
-        mensagem += `Agendado para: ${data || 'Não informado'} às ${hora || 'Não informado'}\n\n`;
+        mensagem += `Agendado para: ${dataFormatada || rawData} às ${hora}\n\n`;
         
         mensagem += `*🎂 DETALHES DO BOLO:*\n`;
         mensagem += `Tamanho: ${tamanho}\n`;
