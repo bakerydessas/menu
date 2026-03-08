@@ -114,19 +114,29 @@
         #produtos-screen header h1 { margin: 0; font-size: 1.4rem; letter-spacing: 2px; cursor: pointer; user-select: none; font-weight: 800; }
 
         #admin-panel { display: none; background: #fdfdfd; padding: 25px 20px; border-bottom: 2px solid #eee; }
-        .admin-box input, .admin-box textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #dbdbdb; border-radius: 10px; font-size: 16px; background: #fafafa; }
-        .btn-postar { background: var(--insta-gradient); color: white; border: none; width: 100%; padding: 16px; border-radius: 30px; font-weight: 700; margin-bottom: 20px; transition: transform 0.2s; }
+        .admin-box input, .admin-box textarea, .admin-box select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #dbdbdb; border-radius: 10px; font-size: 16px; background: #fafafa; font-family: 'Inter', sans-serif;}
+        .btn-postar { background: var(--insta-gradient); color: white; border: none; width: 100%; padding: 16px; border-radius: 30px; font-weight: 700; margin-bottom: 20px; transition: transform 0.2s; cursor: pointer;}
         .btn-postar:active { transform: scale(0.95); }
 
         .cardapio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px; max-width: 600px; margin: 0 auto; }
         .card { background: white; border-radius: 15px; border: 2px solid #efefef; overflow: hidden; position: relative; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; }
         .card.selected { transform: scale(0.95); border: 2px solid var(--seafoam); background: #f9f9f9; }
-        .card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; }
+        .card.esgotado { filter: grayscale(100%); opacity: 0.9; }
+        
+        .img-container { position: relative; width: 100%; aspect-ratio: 1/1; }
+        .card img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Badges de Status - Ajustes Cirúrgicos */
+        .status-badge { position: absolute; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; z-index: 4; box-shadow: 0 4px 10px rgba(0,0,0,0.15); letter-spacing: 0.5px;}
+        .badge-disponivel { bottom: 10px; right: 10px; background: var(--seafoam); color: black; }
+        .badge-esgotado { top: 50%; left: 50%; transform: translate(-50%, -50%); background: #333; color: white; font-size: 0.9rem; padding: 8px 16px;}
+        .badge-novo { top: 10px; left: 10px; background: linear-gradient(135deg, #FFD700, #FFA500); color: black; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);}
+
         .card-info { padding: 10px; flex-grow: 1; }
         .card-title { font-weight: 700; font-size: 0.85rem; color: #333; }
         .card-price { color: var(--text-main); font-weight: 800; margin-top: 5px; font-size: 0.9rem; }
 
-        .btn-check { position: absolute; top: 10px; right: 10px; background: white; color: transparent; border: 2px solid transparent; background-image: linear-gradient(white, white), var(--insta-gradient); background-origin: border-box; background-clip: padding-box, border-box; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 5; transition: 0.3s all; font-size: 14px; }
+        .btn-check { position: absolute; top: 10px; right: 10px; background: white; color: transparent; border: 2px solid transparent; background-image: linear-gradient(white, white), var(--insta-gradient); background-origin: border-box; background-clip: padding-box, border-box; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 5; transition: 0.3s all; font-size: 14px; cursor: pointer;}
         .card.selected .btn-check { background: var(--seafoam); color: black; transform: scale(0.8); border: 2px solid var(--seafoam); }
 
         .footer-order { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 85%; max-width: 320px; z-index: 999; display: flex; flex-direction: column; }
@@ -231,6 +241,11 @@
             <input type="text" id="new-title" placeholder="Nome do doce">
             <input type="tel" id="new-price" placeholder="R$ 0,00" oninput="maskMoney(this)">
             <textarea id="new-desc" rows="3" placeholder="Descrição/Ingredientes..."></textarea>
+            <select id="new-status">
+                <option value="Novo">Status: Novo ✨</option>
+                <option value="Disponível" selected>Status: Disponível</option>
+                <option value="Esgotado">Status: Esgotado</option>
+            </select>
             <input type="file" id="new-img" accept="image/*">
             <button class="btn-postar" id="btn-save" onclick="addItem()">PUBLICAR AGORA</button>
             <button class="btn-insta-link" onclick="location.reload()" style="margin-top: 10px; color: #8e8e8e;">Sair do Painel Admin</button>
@@ -440,6 +455,10 @@
     let menuItems = [];
     let cart = [];
     let titleClicks = 0;
+    
+    // Variáveis para edição
+    let editId = null;
+    let editImgBase64 = null;
 
     function handleTitleClick() {
         titleClicks++;
@@ -470,39 +489,94 @@
         i.value = "R$ " + v;
     }
 
+    // Função para puxar dados para edição
+    function editItem(id) {
+        const item = menuItems.find(i => i.id === id);
+        if(item) {
+            document.getElementById('new-title').value = item.title;
+            document.getElementById('new-price').value = item.price;
+            document.getElementById('new-desc').value = item.desc;
+            document.getElementById('new-status').value = item.status || 'Disponível';
+            editId = id;
+            editImgBase64 = item.img;
+            
+            const btn = document.getElementById('btn-save');
+            btn.innerText = "ATUALIZAR ITEM";
+            btn.style.background = "var(--insta-blue)";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function resetAdminForm() {
+        document.getElementById('new-title').value = "";
+        document.getElementById('new-price').value = "";
+        document.getElementById('new-desc').value = "";
+        document.getElementById('new-img').value = "";
+        document.getElementById('new-status').value = "Disponível";
+        
+        editId = null;
+        editImgBase64 = null;
+        
+        const btn = document.getElementById('btn-save');
+        btn.innerText = "PUBLICAR AGORA";
+        btn.style.background = "var(--insta-gradient)";
+        btn.disabled = false;
+    }
+
     async function addItem() {
         const title = document.getElementById('new-title').value;
         const price = document.getElementById('new-price').value;
         const desc = document.getElementById('new-desc').value;
+        const status = document.getElementById('new-status').value;
         const file = document.getElementById('new-img').files[0];
         const btn = document.getElementById('btn-save');
         
-        if (!title || price === "R$ 0,00" || !file) {
-            showInstaModal('Atenção', 'Por favor, preencha todos os campos e selecione uma foto.', '📸');
+        if (!title || price === "R$ 0,00" || (!file && !editId)) {
+            showInstaModal('Atenção', 'Por favor, preencha os campos e selecione uma foto.', '📸');
             return;
         }
 
-        btn.innerText = "POSTANDO...";
+        btn.innerText = editId ? "ATUALIZANDO..." : "POSTANDO...";
         btn.disabled = true;
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            db.ref('cardapio').push({ title, price, desc, img: reader.result }).then(() => {
-                btn.innerText = "PUBLICAR AGORA";
-                btn.disabled = false;
-                document.getElementById('new-title').value = "";
-                document.getElementById('new-price').value = "";
-                document.getElementById('new-desc').value = "";
-                showInstaModal('Sucesso!', 'Seu novo doce já está no cardápio.', '✨');
-            });
+        const saveToFirebase = (imgData) => {
+            const payload = { title, price, desc, status, img: imgData };
+            
+            if(editId) {
+                db.ref('cardapio/' + editId).update(payload).then(() => {
+                    resetAdminForm();
+                    showInstaModal('Sucesso!', 'Seu produto foi atualizado.', '✏️');
+                });
+            } else {
+                db.ref('cardapio').push(payload).then(() => {
+                    resetAdminForm();
+                    showInstaModal('Sucesso!', 'Seu novo doce já está no cardápio.', '✨');
+                });
+            }
         };
-        reader.readAsDataURL(file);
+
+        if(file) {
+            const reader = new FileReader();
+            reader.onloadend = () => saveToFirebase(reader.result);
+            reader.readAsDataURL(file);
+        } else {
+            saveToFirebase(editImgBase64); // Mantém a imagem antiga se não selecionar uma nova na edição
+        }
     }
 
     db.ref('cardapio').on('value', (snapshot) => {
         const data = snapshot.val();
         menuItems = [];
         for (let id in data) { menuItems.push({ id, ...data[id] }); }
+        
+        // Lógica de ordenação (1: Novo, 2: Disponível, 3: Esgotado)
+        const orderMap = { "Novo": 1, "Disponível": 2, "Esgotado": 3 };
+        menuItems.sort((a, b) => {
+            let statusA = orderMap[a.status || "Disponível"];
+            let statusB = orderMap[b.status || "Disponível"];
+            return statusA - statusB;
+        });
+
         renderMenu();
     });
 
@@ -541,19 +615,41 @@
         const container = document.getElementById('menu-container');
         container.innerHTML = "";
         menuItems.forEach(item => {
+            const itemStatus = item.status || 'Disponível';
+            const isEsgotado = itemStatus === 'Esgotado';
             const isSel = cart.includes(item.id) ? 'selected' : '';
+            
+            // Define os badges flutuantes conforme status
+            let statusBadge = '';
+            if (itemStatus === 'Disponível') {
+                statusBadge = `<div class="status-badge badge-disponivel">Disponível</div>`;
+            } else if (itemStatus === 'Esgotado') {
+                statusBadge = `<div class="status-badge badge-esgotado">Esgotado</div>`;
+            } else if (itemStatus === 'Novo') {
+                statusBadge = `<div class="status-badge badge-novo">Novo ✨</div>`;
+            }
+
             const card = document.createElement('div');
-            card.className = `card ${isSel}`;
+            // Adiciona classe 'esgotado' pro visual preto e branco no card
+            card.className = `card ${isSel} ${isEsgotado ? 'esgotado' : ''}`;
             card.id = `card-${item.id}`;
+            
             card.innerHTML = `
-                <div class="btn-check" onclick="toggleCart('${item.id}')">✓</div>
-                <img src="${item.img}" onclick="document.getElementById('modal-view').src=this.src; document.getElementById('img-modal').style.display='flex'">
+                ${!isEsgotado ? `<div class="btn-check" onclick="toggleCart('${item.id}')">✓</div>` : ''}
+                <div class="img-container">
+                    <img src="${item.img}" onclick="document.getElementById('modal-view').src=this.src; document.getElementById('img-modal').style.display='flex'">
+                    ${statusBadge}
+                </div>
                 <div class="card-info">
                     <div class="card-title">${item.title}</div>
                     <div style="font-size:0.7rem; color:#8e8e8e; margin-top:4px; line-height:1.1">${item.desc}</div>
                     <div class="card-price">${item.price}</div>
                 </div>
-                ${isAdmin ? `<button onclick="deleteItem('${item.id}')" style="background:#fff; color:#ed4956; border:none; border-top:1px solid #eee; padding:10px; font-size:10px; font-weight:bold; width:100%">REMOVER</button>` : ''}
+                ${isAdmin ? `
+                <div style="display:flex; border-top:1px solid #eee;">
+                    <button onclick="editItem('${item.id}')" style="flex:1; background:#fff; color:var(--insta-blue); border:none; padding:12px; font-size:11px; font-weight:bold; border-right:1px solid #eee; cursor:pointer;">EDITAR</button>
+                    <button onclick="deleteItem('${item.id}')" style="flex:1; background:#fff; color:#ed4956; border:none; padding:12px; font-size:11px; font-weight:bold; cursor:pointer;">REMOVER</button>
+                </div>` : ''}
             `;
             container.appendChild(card);
         });
