@@ -79,6 +79,7 @@
         }
         .btn-home:nth-child(2) { animation-delay: 0.1s; }
         .btn-home:nth-child(3) { animation-delay: 0.2s; }
+        .btn-home:nth-child(4) { animation-delay: 0.3s; }
         .btn-home:active { transform: scale(0.92); }
 
         /* ================= BOTÃO VOLTAR FLUTUANTE ================= */
@@ -211,6 +212,9 @@
         .btn-insta-blue:active { transform: scale(0.95); }
         .btn-insta-link { background: none; border: none; color: var(--text-secondary); font-weight: bold; padding: 10px; width: 100%; font-size: 0.9rem; cursor: pointer;}
         .btn-danger { color: #ed4956 !important; }
+        
+        /* Modal de Mensagens deve ficar acima de todos */
+        #insta-modal-overlay { z-index: 99999 !important; }
 
         /* Ajustes Modal de Imagem */
         #img-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; flex-direction: column; justify-content: center; align-items: center; }
@@ -277,6 +281,7 @@
     <h1 class="home-title">Dessa's Bakery</h1>
     <button class="btn-home" onclick="navTo('produtos')">Produtos</button>
     <button class="btn-home" onclick="navTo('encomendas')">Encomendas</button>
+    <button class="btn-home" onclick="window.open('https://share.google/V5mK11fYc07tWWEqM', '_blank')">Avaliação</button>
 </div>
 
 <div id="produtos-screen">
@@ -302,6 +307,7 @@
             <input type="text" id="chk-nome" placeholder="Seu Nome">
             
             <select id="chk-tipo" onchange="toggleCheckoutEntrega()">
+                <option value="" disabled selected>Selecione o tipo de entrega...</option>
                 <option value="Retirada">Retirada no Local</option>
                 <option value="Entrega">Entrega</option>
             </select>
@@ -312,6 +318,7 @@
             </div>
             
             <select id="chk-pagamento">
+                <option value="" disabled selected>Forma de pagamento...</option>
                 <option value="Pix">Pix</option>
                 <option value="Dinheiro">Dinheiro</option>
                 <option value="Cartão de Crédito">Cartão de Crédito</option>
@@ -319,8 +326,7 @@
             </select>
 
             <div id="chk-resumo" style="margin-top: 15px; font-size: 14px; text-align: left; background: #fafafa; padding: 10px; border-radius: 8px; border: 1px solid #eee;">
-                <div>Subtotal: <span id="chk-subtotal" style="float:right; font-weight:bold;">R$ 0,00</span></div>
-                <div style="margin-top: 5px; padding-top: 5px; border-top: 1px solid #ddd; font-weight: 800; font-size: 16px;">Total Geral: <span id="chk-total-geral" style="float:right;">R$ 0,00</span></div>
+                <div style="font-weight: 800; font-size: 16px;">Total Geral: <span id="chk-total-geral" style="float:right;">R$ 0,00</span></div>
             </div>
 
             <button class="btn-insta-blue" onclick="enviarPedidoProdutosWhatsapp()">Confirmar via WhatsApp</button>
@@ -750,6 +756,15 @@
             showInstaModal('Carrinho Vazio', 'Selecione pelo menos um doce adicionando quantidades.', '🛒');
             return;
         }
+
+        // Reseta os campos ao abrir para virem vazios por padrão
+        document.getElementById('chk-nome').value = '';
+        document.getElementById('chk-tipo').value = '';
+        document.getElementById('chk-end').value = '';
+        document.getElementById('chk-num').value = '';
+        document.getElementById('chk-pagamento').value = '';
+        document.getElementById('box-entrega').style.display = 'none';
+
         document.getElementById('checkout-overlay').style.display = 'flex';
         calcResumoCheckout();
     }
@@ -772,19 +787,18 @@
             if (item) subtotalValor += parsePrice(item.price) * cart[id];
         }
 
-        document.getElementById('chk-subtotal').innerText = formatPrice(subtotalValor);
         document.getElementById('chk-total-geral').innerText = formatPrice(subtotalValor);
     }
 
     function enviarPedidoProdutosWhatsapp() {
-        const nome = document.getElementById('chk-nome').value;
+        const nome = document.getElementById('chk-nome').value.trim();
         const tipo = document.getElementById('chk-tipo').value;
-        const end = document.getElementById('chk-end').value;
-        const num = document.getElementById('chk-num').value;
+        const end = document.getElementById('chk-end').value.trim();
+        const num = document.getElementById('chk-num').value.trim();
         const pag = document.getElementById('chk-pagamento').value;
 
-        if (!nome) {
-            showInstaModal('Aviso', 'Preencha seu nome por favor.', '📝');
+        if (!nome || !tipo || !pag) {
+            showInstaModal('Aviso', 'Preencha todos os campos obrigatórios (Nome, Tipo e Pagamento).', '📝');
             return;
         }
         if (tipo === 'Entrega' && (!end || !num)) {
