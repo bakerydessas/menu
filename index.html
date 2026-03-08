@@ -123,25 +123,8 @@
         .card.selected { transform: scale(0.95); border: 2px solid var(--seafoam); background: #f9f9f9; }
         .card.esgotado { filter: grayscale(100%); opacity: 0.9; }
         
-        /* Ajuste cirúrgico: Container de Imagem com Scroll Horizontal */
-        .img-container { 
-            position: relative; 
-            width: 100%; 
-            aspect-ratio: 1/1; 
-            display: flex; 
-            overflow-x: auto; 
-            scroll-snap-type: x mandatory;
-            scrollbar-width: none; /* Firefox */
-        }
-        .img-container::-webkit-scrollbar { display: none; } /* Chrome/Safari */
-        
-        .card img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-            flex: 0 0 100%; 
-            scroll-snap-align: start;
-        }
+        .img-container { position: relative; width: 100%; aspect-ratio: 1/1; }
+        .card img { width: 100%; height: 100%; object-fit: cover; }
         
         /* Badges de Status - Ajustes Cirúrgicos */
         .status-badge { position: absolute; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; z-index: 4; box-shadow: 0 4px 10px rgba(0,0,0,0.15); letter-spacing: 0.5px;}
@@ -170,10 +153,12 @@
         .btn-insta-link { background: none; border: none; color: var(--text-secondary); font-weight: bold; padding: 10px; width: 100%; font-size: 0.9rem; cursor: pointer;}
         .btn-danger { color: #ed4956 !important; }
 
-        /* Ajuste cirúrgico: Botão de fechar no modal de imagem */
-        #img-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; }
-        #img-modal img { max-width: 95%; max-height: 85vh; border-radius: 10px; }
-        .btn-close-img { position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; font-weight: bold; cursor: pointer; text-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 2100; }
+        /* Ajustes Modal de Imagem (Carrossel e 1:1) */
+        #img-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; flex-direction: column; justify-content: center; align-items: center; }
+        .modal-close { position: absolute; top: 20px; right: 20px; color: white; font-size: 32px; font-weight: bold; cursor: pointer; z-index: 2001; }
+        .slider-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; width: 100%; max-width: 500px; scrollbar-width: none; align-items: center; }
+        .slider-container::-webkit-scrollbar { display: none; }
+        .slider-container img { flex: 0 0 100%; scroll-snap-align: center; object-fit: cover; aspect-ratio: 1/1; width: 100%; max-height: 80vh; border-radius: 10px; padding: 0 10px; }
 
         /* ================= TELA ENCOMENDAS ================= */
         #encomendas-screen {
@@ -284,8 +269,8 @@
     </button>
 
     <div id="img-modal">
-        <span class="btn-close-img" onclick="document.getElementById('img-modal').style.display='none'">×</span>
-        <img id="modal-view" src="">
+        <div class="modal-close" onclick="document.getElementById('img-modal').style.display='none'">✕</div>
+        <div class="slider-container" id="modal-slider"></div>
     </div>
 </div>
 
@@ -480,7 +465,7 @@
     
     // Variáveis para edição
     let editId = null;
-    let editImgBase64 = []; // Agora é um array
+    let editImgBase64 = null;
 
     function handleTitleClick() {
         titleClicks++;
@@ -511,8 +496,8 @@
         i.value = "R$ " + v;
     }
 
-    // Ajuste cirúrgico: Processar imagem para corte 1:1
-    async function processImage(file) {
+    // Função de corte cirúrgico para 1:1 automático
+    function cropImageTo1x1(file) {
         return new Promise((resolve) => {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -520,11 +505,13 @@
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
                     const size = Math.min(img.width, img.height);
-                    canvas.width = 600; // Resolução padrão
-                    canvas.height = 600;
+                    canvas.width = size;
+                    canvas.height = size;
                     const ctx = canvas.getContext('2d');
-                    // Desenha cortando o centro (1:1)
-                    ctx.drawImage(img, (img.width - size) / 2, (img.height - size) / 2, size, size, 0, 0, 600, 600);
+                    const offsetX = (img.width - size) / 2;
+                    const offsetY = (img.height - size) / 2;
+                    ctx.drawImage(img, offsetX, offsetY, size, size, 0, 0, size, size);
+                    // Comprime para não estourar o limite do firebase com as multiplas fotos
                     resolve(canvas.toDataURL('image/jpeg', 0.8));
                 };
                 img.src = e.target.result;
@@ -533,6 +520,7 @@
         });
     }
 
+    // Função para puxar dados para edição
     function editItem(id) {
         const item = menuItems.find(i => i.id === id);
         if(item) {
@@ -541,7 +529,9 @@
             document.getElementById('new-desc').value = item.desc;
             document.getElementById('new-status').value = item.status || 'Disponível';
             editId = id;
-            editImgBase64 = Array.isArray(item.img) ? item.img : [item.img];
+            
+            // Mantém array de imagens antigas ou imagem única antiga
+            editImgBase64 = item.imgs || item.img; 
             
             const btn = document.getElementById('btn-save');
             btn.innerText = "ATUALIZAR ITEM";
@@ -556,15 +546,16 @@
         document.getElementById('new-desc').value = "";
         document.getElementById('new-img').value = "";
         document.getElementById('new-status').value = "Disponível";
+        
         editId = null;
-        editImgBase64 = [];
+        editImgBase64 = null;
+        
         const btn = document.getElementById('btn-save');
         btn.innerText = "PUBLICAR AGORA";
         btn.style.background = "var(--insta-gradient)";
         btn.disabled = false;
     }
 
-    // Ajuste cirúrgico: addItem suportando múltiplas fotos e corte
     async function addItem() {
         const title = document.getElementById('new-title').value;
         const price = document.getElementById('new-price').value;
@@ -574,24 +565,27 @@
         const btn = document.getElementById('btn-save');
         
         if (!title || price === "R$ 0,00" || (files.length === 0 && !editId)) {
-            showInstaModal('Atenção', 'Por favor, preencha os campos e selecione ao menos uma foto.', '📸');
+            showInstaModal('Atenção', 'Por favor, preencha os campos e selecione pelo menos uma foto.', '📸');
             return;
         }
 
         btn.innerText = editId ? "ATUALIZANDO..." : "POSTANDO...";
         btn.disabled = true;
 
-        let finalImgs = [];
-        if(files.length > 0) {
-            for(let file of files) {
-                const cropped = await processImage(file);
-                finalImgs.push(cropped);
+        let imgDataArray = [];
+
+        // Se o usuário selecionou novas fotos, corta todas para 1:1 e salva
+        if (files.length > 0) {
+            for (let i = 0; i < files.length; i++) {
+                let croppedImg = await cropImageTo1x1(files[i]);
+                imgDataArray.push(croppedImg);
             }
-        } else {
-            finalImgs = editImgBase64;
+        } else if (editImgBase64) {
+            // Se for edição e não colocou foto nova, garante que o formato antigo vire array
+            imgDataArray = Array.isArray(editImgBase64) ? editImgBase64 : [editImgBase64];
         }
 
-        const payload = { title, price, desc, status, img: finalImgs };
+        const payload = { title, price, desc, status, imgs: imgDataArray };
         
         if(editId) {
             db.ref('cardapio/' + editId).update(payload).then(() => {
@@ -610,12 +604,14 @@
         const data = snapshot.val();
         menuItems = [];
         for (let id in data) { menuItems.push({ id, ...data[id] }); }
+        
         const orderMap = { "Novo": 1, "Disponível": 2, "Esgotado": 3 };
         menuItems.sort((a, b) => {
             let statusA = orderMap[a.status || "Disponível"];
             let statusB = orderMap[b.status || "Disponível"];
             return statusA - statusB;
         });
+
         renderMenu();
     });
 
@@ -650,7 +646,24 @@
         });
     }
 
-    // Ajuste cirúrgico: renderMenu renderizando carrossel de fotos
+    // Função cirúrgica para abrir o slider de imagens
+    function openImageModal(id) {
+        const item = menuItems.find(i => i.id === id);
+        if(!item) return;
+
+        const itemImgs = item.imgs || (item.img ? [item.img] : []);
+        const slider = document.getElementById('modal-slider');
+        slider.innerHTML = '';
+
+        itemImgs.forEach(src => {
+            const img = document.createElement('img');
+            img.src = src;
+            slider.appendChild(img);
+        });
+
+        document.getElementById('img-modal').style.display = 'flex';
+    }
+
     function renderMenu() {
         const container = document.getElementById('menu-container');
         container.innerHTML = "";
@@ -658,14 +671,19 @@
             const itemStatus = item.status || 'Disponível';
             const isEsgotado = itemStatus === 'Esgotado';
             const isSel = cart.includes(item.id) ? 'selected' : '';
+            
             let statusBadge = '';
-            if (itemStatus === 'Disponível') statusBadge = `<div class="status-badge badge-disponivel">Disponível</div>`;
-            else if (itemStatus === 'Esgotado') statusBadge = `<div class="status-badge badge-esgotado">Esgotado</div>`;
-            else if (itemStatus === 'Novo') statusBadge = `<div class="status-badge badge-novo">Novo ✨</div>`;
+            if (itemStatus === 'Disponível') {
+                statusBadge = `<div class="status-badge badge-disponivel">Disponível</div>`;
+            } else if (itemStatus === 'Esgotado') {
+                statusBadge = `<div class="status-badge badge-esgotado">Esgotado</div>`;
+            } else if (itemStatus === 'Novo') {
+                statusBadge = `<div class="status-badge badge-novo">Novo ✨</div>`;
+            }
 
-            // Garante que fotos sejam tratadas como array
-            const fotos = Array.isArray(item.img) ? item.img : [item.img];
-            let fotosHtml = fotos.map(f => `<img src="${f}" onclick="document.getElementById('modal-view').src=this.src; document.getElementById('img-modal').style.display='flex'">`).join('');
+            // Garante compatibilidade visual do card com banco de dados antigo (img) ou novo (imgs[])
+            const itemImgs = item.imgs || (item.img ? [item.img] : []);
+            const coverImg = itemImgs.length > 0 ? itemImgs[0] : '';
 
             const card = document.createElement('div');
             card.className = `card ${isSel} ${isEsgotado ? 'esgotado' : ''}`;
@@ -674,7 +692,7 @@
             card.innerHTML = `
                 ${!isEsgotado ? `<div class="btn-check" onclick="toggleCart('${item.id}')">✓</div>` : ''}
                 <div class="img-container">
-                    ${fotosHtml}
+                    <img src="${coverImg}" onclick="openImageModal('${item.id}')">
                     ${statusBadge}
                 </div>
                 <div class="card-info">
@@ -692,43 +710,67 @@
         });
     }
 
-    // ================= LÓGICA ENCOMENDAS =================
+    // ================= LÓGICA ENCOMENDAS (AJUSTADA) =================
     function openModal() { document.getElementById('modalEntrega').style.display = 'flex'; }
     function closeModal() { document.getElementById('modalEntrega').style.display = 'none'; }
+    
     function selectOption(val, text) {
         document.getElementById('tipo_entrega_val').value = val;
         document.getElementById('entrega_texto').innerText = text;
         closeModal();
     }
+
     function enviarPedido() {
         const nome = document.getElementById('cliente_nome').value;
         const tipoEntrega = document.getElementById('tipo_entrega_val').value;
         const endereco = document.getElementById('cliente_endereco').value;
         let rawData = document.getElementById('cliente_data').value;
         const hora = document.getElementById('cliente_hora').value;
+
         const getSelecionados = (nomeDoCampo) => {
             const marcados = document.querySelectorAll(`input[name="${nomeDoCampo}"]:checked`);
             let valores = [];
-            marcados.forEach((checkbox) => valores.push(checkbox.value));
+            marcados.forEach((checkbox) => {
+                valores.push(checkbox.value);
+            });
             return valores.length > 0 ? valores.join(', ') : 'Não selecionado';
         };
+
         const massa = getSelecionados('massa');
         const recheio = getSelecionados('recheio');
         const cobertura = getSelecionados('cobertura');
         const tamanho = getSelecionados('tamanho');
+
         if (!nome || !rawData || !hora || massa === 'Não selecionado' || recheio === 'Não selecionado' || cobertura === 'Não selecionado' || tamanho === 'Não selecionado') {
             showInstaModal('Dados Incompletos', 'Por favor, preencha todos os campos para continuar.', '📝');
             return;
         }
+
         let dataFormatada = "";
         if(rawData && rawData.includes('-')) {
             const partesData = rawData.split('-');
             dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
         }
-        let mensagem = `*NOVA ENCOMENDA - Dessa's Bakery* 🧁\n\n*👤 CLIENTE:*\nNome: ${nome}\nTipo: ${tipoEntrega}\n`;
-        if(tipoEntrega === 'Entrega') mensagem += `Endereço: ${endereco || 'Não informado'}\n`;
-        mensagem += `Agendado para: ${dataFormatada || rawData} às ${hora}\n\n*🎂 DETALHES DO BOLO:*\nTamanho: ${tamanho}\nMassa: ${massa}\nRecheio(s): ${recheio}\nCobertura: ${cobertura}\n\nTenho interesse nessa encomenda!`;
-        window.open(`https://wa.me/5515981463360?text=${encodeURIComponent(mensagem)}`, '_blank');
+
+        let mensagem = `*NOVA ENCOMENDA - Dessa's Bakery* 🧁\n\n`;
+        mensagem += `*👤 CLIENTE:*\n`;
+        mensagem += `Nome: ${nome}\n`;
+        mensagem += `Tipo: ${tipoEntrega}\n`;
+        if(tipoEntrega === 'Entrega') {
+            mensagem += `Endereço: ${endereco || 'Não informado'}\n`;
+        }
+        mensagem += `Agendado para: ${dataFormatada || rawData} às ${hora}\n\n`;
+        
+        mensagem += `*🎂 DETALHES DO BOLO:*\n`;
+        mensagem += `Tamanho: ${tamanho}\n`;
+        mensagem += `Massa: ${massa}\n`;
+        mensagem += `Recheio(s): ${recheio}\n`;
+        mensagem += `Cobertura: ${cobertura}\n\n`;
+        
+        mensagem += `Tenho interesse nessa encomenda!`;
+
+        const url = `https://wa.me/5515981463360?text=${encodeURIComponent(mensagem)}`;
+        window.open(url, '_blank');
     }
 </script>
 
