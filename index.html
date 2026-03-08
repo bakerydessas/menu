@@ -281,7 +281,7 @@
     <h1 class="home-title">Dessa's Bakery</h1>
     <button class="btn-home" onclick="navTo('produtos')">Produtos</button>
     <button class="btn-home" onclick="navTo('encomendas')">Encomendas</button>
-    <button class="btn-home" onclick="window.open('https://share.google/V5mK11fYc07tWWEqM', '_blank')">Avaliação</button>
+    <button class="btn-home" onclick="window.location.href='https://share.google/V5mK11fYc07tWWEqM'">Avaliação</button>
 </div>
 
 <div id="produtos-screen">
@@ -748,6 +748,17 @@
         }
     }
 
+    // ================= FUNÇÃO GERAR COMANDA =================
+    function gerarComanda(nome, valor) {
+        const inicial = nome ? nome.charAt(0).toUpperCase() : 'X';
+        const hoje = new Date();
+        const d = String(hoje.getDate()).padStart(2, '0');
+        const m = String(hoje.getMonth() + 1).padStart(2, '0');
+        const a = hoje.getFullYear();
+        const valorFormatado = Math.floor(Number(valor) || 0);
+        return `#${inicial}${d}${m}${a}${valorFormatado}`;
+    }
+
     // ================= FUNÇÕES DO CHECKOUT (PRODUTOS) =================
     let subtotalValor = 0;
 
@@ -806,7 +817,9 @@
             return;
         }
 
-        let msg = `🧁 *Novo Pedido - Dessa's Bakery*\n\n`;
+        const comanda = gerarComanda(nome, subtotalValor);
+        
+        let msg = `*Pedido ${comanda}*\n🧁 *Novo Pedido - Dessa's Bakery*\n\n`;
         msg += `*👤 CLIENTE:*\nNome: ${nome}\nTipo: ${tipo}\n`;
         if(tipo === 'Entrega') {
             msg += `Endereço: ${end}, ${num}\n`;
@@ -824,7 +837,7 @@
         msg += `\n*🧾 RESUMO:*\n`;
         msg += `*Total a pagar: ${formatPrice(subtotalValor)}*`;
 
-        window.open(`https://wa.me/5515981463360?text=${encodeURIComponent(msg)}`);
+        window.location.href = `https://api.whatsapp.com/send?phone=5515981463360&text=${encodeURIComponent(msg)}`;
         closeOverlay('checkout-overlay');
     }
 
@@ -945,7 +958,11 @@
             dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
         }
 
-        let mensagem = `*NOVA ENCOMENDA - Dessa's Bakery* 🧁\n\n`;
+        const precoMatch = tamanho.match(/R\$(\d+)/);
+        const precoStr = precoMatch ? precoMatch[1] : '0';
+        const comanda = gerarComanda(nome, precoStr);
+
+        let mensagem = `*Pedido ${comanda}*\n*NOVA ENCOMENDA - Dessa's Bakery* 🧁\n\n`;
         mensagem += `*👤 CLIENTE:*\n`;
         mensagem += `Nome: ${nome}\n`;
         mensagem += `Tipo: ${tipoEntrega}\n`;
@@ -962,8 +979,8 @@
         
         mensagem += `Tenho interesse nessa encomenda!`;
 
-        const url = `https://wa.me/5515981463360?text=${encodeURIComponent(mensagem)}`;
-        window.open(url, '_blank');
+        const url = `https://api.whatsapp.com/send?phone=5515981463360&text=${encodeURIComponent(mensagem)}`;
+        window.location.href = url;
     }
 </script>
 
