@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dessa's Bakery | App</title>
+    <title>Dessa's Cake | App</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Grand+Hotel&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
@@ -278,7 +278,7 @@
 </div>
 
 <div id="home-screen">
-    <h1 class="home-title">Dessa's Bakery</h1>
+    <h1 class="home-title">Dessa's Cake</h1>
     <button class="btn-home" onclick="navTo('produtos')">Produtos</button>
     <button class="btn-home" onclick="navTo('encomendas')">Encomendas</button>
     <button class="btn-home" onclick="window.location.href='https://share.google/V5mK11fYc07tWWEqM'">Avaliação</button>
@@ -286,7 +286,7 @@
 
 <div id="produtos-screen">
     <header>
-        <h1 onclick="handleTitleClick()">DESSA'S BAKERY</h1>
+        <h1 onclick="handleTitleClick()">DESSA'S CAKE</h1>
     </header>
     
     <div id="floating-total" class="floating-total">Total: R$ 0,00</div>
@@ -371,7 +371,7 @@
 <div id="encomendas-screen">
     <div class="app-container">
         <header class="header-enc">
-            <h1>Dessa's Bakery</h1>
+            <h1>Dessa's Cake</h1>
         </header>
 
         <main class="content">
@@ -819,7 +819,7 @@
 
         const comanda = gerarComanda(nome, subtotalValor);
         
-        let msg = `*Pedido ${comanda}*\n🧁 *Novo Pedido - Dessa's Bakery*\n\n`;
+        let msg = `*Pedido ${comanda}*\n🧁 *Novo Pedido - Dessa's Cake*\n\n`;
         msg += `*👤 CLIENTE:*\nNome: ${nome}\nTipo: ${tipo}\n`;
         if(tipo === 'Entrega') {
             msg += `Endereço: ${end}, ${num}\n`;
@@ -962,7 +962,7 @@
         const precoStr = precoMatch ? precoMatch[1] : '0';
         const comanda = gerarComanda(nome, precoStr);
 
-        let mensagem = `*Pedido ${comanda}*\n*NOVA ENCOMENDA - Dessa's Bakery* 🧁\n\n`;
+        let mensagem = `*Pedido ${comanda}*\n*NOVA ENCOMENDA - Dessa's Cake* 🧁\n\n`;
         mensagem += `*👤 CLIENTE:*\n`;
         mensagem += `Nome: ${nome}\n`;
         mensagem += `Tipo: ${tipoEntrega}\n`;
