@@ -35,6 +35,12 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        @keyframes popIn { 
+            0% { transform: scale(0.8); opacity: 0; } 
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; } 
+        }
+
         /* ================= TELA INICIAL ================= */
         #home-screen {
             display: flex;
@@ -113,6 +119,25 @@
 
         #produtos-screen header h1 { margin: 0; font-size: 1.4rem; letter-spacing: 2px; cursor: pointer; user-select: none; font-weight: 800; }
 
+        /* ======== TOTAL FLUTUANTE ANIMADO ======== */
+        .floating-total {
+            position: fixed;
+            bottom: 95px; /* Simétrico ao botão voltar */
+            left: 20px;
+            background: var(--insta-gradient);
+            color: white;
+            padding: 16px 20px;
+            border-radius: 10px; /* Quadrado com bordas arredondadas */
+            font-weight: 800;
+            font-size: 18px;
+            z-index: 1000;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            display: none;
+        }
+        .pop-anim {
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
         #admin-panel { display: none; background: #fdfdfd; padding: 25px 20px; border-bottom: 2px solid #eee; }
         .admin-box input, .admin-box textarea, .admin-box select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #dbdbdb; border-radius: 10px; font-size: 16px; background: #fafafa; font-family: 'Inter', sans-serif;}
         .btn-postar { background: var(--insta-gradient); color: white; border: none; width: 100%; padding: 16px; border-radius: 30px; font-weight: 700; margin-bottom: 20px; transition: transform 0.2s; cursor: pointer;}
@@ -120,24 +145,59 @@
 
         .cardapio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px; max-width: 600px; margin: 0 auto; }
         .card { background: white; border-radius: 15px; border: 2px solid #efefef; overflow: hidden; position: relative; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; }
-        .card.selected { transform: scale(0.95); border: 2px solid var(--seafoam); background: #f9f9f9; }
+        .card.selected { border: 2px solid var(--seafoam); background: #f9f9f9; }
         .card.esgotado { filter: grayscale(100%); opacity: 0.9; }
         
         .img-container { position: relative; width: 100%; aspect-ratio: 1/1; }
         .card img { width: 100%; height: 100%; object-fit: cover; }
         
-        /* Badges de Status - Ajustes Cirúrgicos */
         .status-badge { position: absolute; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; z-index: 4; box-shadow: 0 4px 10px rgba(0,0,0,0.15); letter-spacing: 0.5px;}
         .badge-disponivel { bottom: 10px; right: 10px; background: var(--seafoam); color: black; }
         .badge-esgotado { top: 50%; left: 50%; transform: translate(-50%, -50%); background: #333; color: white; font-size: 0.9rem; padding: 8px 16px;}
         .badge-novo { top: 10px; left: 10px; background: linear-gradient(135deg, #FFD700, #FFA500); color: black; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);}
 
-        .card-info { padding: 10px; flex-grow: 1; }
+        .card-info { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; }
         .card-title { font-weight: 700; font-size: 0.85rem; color: #333; }
         .card-price { color: var(--text-main); font-weight: 800; margin-top: 5px; font-size: 0.9rem; }
 
-        .btn-check { position: absolute; top: 10px; right: 10px; background: white; color: transparent; border: 2px solid transparent; background-image: linear-gradient(white, white), var(--insta-gradient); background-origin: border-box; background-clip: padding-box, border-box; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 5; transition: 0.3s all; font-size: 14px; cursor: pointer;}
-        .card.selected .btn-check { background: var(--seafoam); color: black; transform: scale(0.8); border: 2px solid var(--seafoam); }
+        /* Botões de Ação (+ e -) na parte inferior direita da descrição */
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: auto; /* Empurra os botões para baixo se a descrição for curta */
+            padding-top: 10px;
+        }
+        .btn-action { 
+            background: white; 
+            border: 2px solid #efefef; 
+            width: 38px; 
+            height: 38px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 5; 
+            transition: 0.3s all; 
+            font-size: 24px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+        .btn-action:active { transform: scale(0.8); }
+        .btn-action.add { color: var(--seafoam); border-color: var(--seafoam); }
+        .btn-action.minus { color: #ed4956; border-color: #ed4956; }
+
+        /* Bolinha de Quantidade Verde Água Gigante e Brilhante */
+        .qty-bubble {
+            position: absolute; top: 10px; left: 10px; 
+            background: var(--seafoam); color: black; 
+            width: 48px; height: 48px; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            z-index: 6; font-size: 18px; font-weight: 900; 
+            box-shadow: 0 0 15px var(--seafoam), 0 4px 10px rgba(0,0,0,0.3); 
+            animation: popIn 0.3s; border: 2px solid white;
+        }
 
         .footer-order { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 85%; max-width: 320px; z-index: 999; display: flex; flex-direction: column; }
         .btn-whatsapp-prod { background: var(--insta-gradient); color: white; border: none; width: 100%; padding: 16px; border-radius: 30px; font-weight: 700; box-shadow: 0 8px 20px rgba(212, 35, 102, 0.3); display: flex; justify-content: center; align-items: center; gap: 10px; cursor: pointer; transition: transform 0.2s;}
@@ -145,15 +205,14 @@
 
         /* Modais Estilo Instagram (Globais) */
         .insta-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center; }
-        .insta-popup { background: white; width: 85%; max-width: 300px; border-radius: 15px; padding: 25px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .insta-popup input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #dbdbdb; background: #fafafa; border-radius: 8px; text-align: center; font-size: 16px; }
-        .btn-insta-blue { background: var(--insta-blue); color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; margin-bottom: 5px; cursor: pointer; transition: transform 0.2s;}
+        .insta-popup { background: white; width: 90%; max-width: 340px; border-radius: 15px; padding: 25px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-height: 90vh; overflow-y: auto;}
+        .insta-popup input, .insta-popup select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #dbdbdb; background: #fafafa; border-radius: 8px; text-align: left; font-size: 15px; font-family: 'Inter', sans-serif;}
+        .btn-insta-blue { background: var(--insta-blue); color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 10px; margin-bottom: 5px; cursor: pointer; transition: transform 0.2s;}
         .btn-insta-blue:active { transform: scale(0.95); }
         .btn-insta-link { background: none; border: none; color: var(--text-secondary); font-weight: bold; padding: 10px; width: 100%; font-size: 0.9rem; cursor: pointer;}
         .btn-danger { color: #ed4956 !important; }
 
-        /* Ajustes Modal de Imagem (Carrossel e 1:1) */
+        /* Ajustes Modal de Imagem */
         #img-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; flex-direction: column; justify-content: center; align-items: center; }
         .modal-close { position: absolute; top: 20px; right: 20px; color: white; font-size: 32px; font-weight: bold; cursor: pointer; z-index: 2001; }
         .slider-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; width: 100%; max-width: 500px; scrollbar-width: none; align-items: center; }
@@ -161,16 +220,10 @@
         .slider-container img { flex: 0 0 100%; scroll-snap-align: center; object-fit: cover; aspect-ratio: 1/1; width: 100%; max-height: 80vh; border-radius: 10px; padding: 0 10px; }
 
         /* ================= TELA ENCOMENDAS ================= */
-        #encomendas-screen {
-            display: none;
-            background-color: #fafafa;
-            min-height: 100vh;
-        }
-
+        #encomendas-screen { display: none; background-color: #fafafa; min-height: 100vh; }
         .app-container { width: 100%; max-width: 414px; background-color: #ffffff; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; padding-bottom: 120px; margin: 0 auto;}
         .header-enc { display: flex; align-items: center; justify-content: center; height: 60px; border-bottom: 1px solid #dbdbdb; background-color: #ffffff; position: sticky; top: 0; z-index: 10; }
         .header-enc h1 { font-family: 'Grand Hotel', cursive; font-size: 32px; font-weight: 400; letter-spacing: 1px; color: #262626; }
-        
         .content { padding: 20px; }
         .section-title { font-size: 14px; font-weight: 700; color: #8e8e8e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; margin-top: 10px; }
         .enc-card { background: #ffffff; border: 1px solid #dbdbdb; border-radius: 8px; padding: 15px; margin-bottom: 25px; }
@@ -230,6 +283,8 @@
     <header>
         <h1 onclick="handleTitleClick()">DESSA'S BAKERY</h1>
     </header>
+    
+    <div id="floating-total" class="floating-total">Total: R$ 0,00</div>
 
     <div id="login-overlay" class="insta-overlay">
         <div class="insta-popup">
@@ -237,6 +292,39 @@
             <input type="password" id="admin-pass" placeholder="Senha">
             <button class="btn-insta-blue" onclick="checkAdminPass()">Entrar</button>
             <button class="btn-insta-link" onclick="closeOverlay('login-overlay')">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="checkout-overlay" class="insta-overlay">
+        <div class="insta-popup">
+            <div style="font-weight: 800; font-size: 1.2rem; margin-bottom: 10px;">Finalizar Pedido</div>
+            
+            <input type="text" id="chk-nome" placeholder="Seu Nome">
+            
+            <select id="chk-tipo" onchange="toggleCheckoutEntrega()">
+                <option value="Retirada">Retirada no Local</option>
+                <option value="Entrega">Entrega</option>
+            </select>
+            
+            <div id="box-entrega" style="display: none; background: #f0f0f0; padding: 10px; border-radius: 8px; margin-bottom: 8px;">
+                <input type="text" id="chk-end" placeholder="Endereço (Rua, Bairro)">
+                <input type="text" id="chk-num" placeholder="Número">
+            </div>
+            
+            <select id="chk-pagamento">
+                <option value="Pix">Pix</option>
+                <option value="Dinheiro">Dinheiro</option>
+                <option value="Cartão de Crédito">Cartão de Crédito</option>
+                <option value="Cartão de Débito">Cartão de Débito</option>
+            </select>
+
+            <div id="chk-resumo" style="margin-top: 15px; font-size: 14px; text-align: left; background: #fafafa; padding: 10px; border-radius: 8px; border: 1px solid #eee;">
+                <div>Subtotal: <span id="chk-subtotal" style="float:right; font-weight:bold;">R$ 0,00</span></div>
+                <div style="margin-top: 5px; padding-top: 5px; border-top: 1px solid #ddd; font-weight: 800; font-size: 16px;">Total Geral: <span id="chk-total-geral" style="float:right;">R$ 0,00</span></div>
+            </div>
+
+            <button class="btn-insta-blue" onclick="enviarPedidoProdutosWhatsapp()">Confirmar via WhatsApp</button>
+            <button class="btn-insta-link" onclick="closeOverlay('checkout-overlay')">Cancelar</button>
         </div>
     </div>
 
@@ -259,7 +347,7 @@
     <div class="cardapio-grid" id="menu-container"></div>
 
     <div class="footer-order">
-        <button class="btn-whatsapp-prod" onclick="sendOrder()">
+        <button class="btn-whatsapp-prod" onclick="abrirCheckoutProdutos()">
             <span>✓</span> FINALIZAR PEDIDO
         </button>
     </div>
@@ -392,7 +480,6 @@
 </div>
 
 <script>
-    // ================= LÓGICA DE NAVEGAÇÃO =================
     function navTo(screen) {
         document.getElementById('home-screen').style.display = 'none';
         document.getElementById('produtos-screen').style.display = 'none';
@@ -405,7 +492,6 @@
         window.scrollTo(0,0);
     }
 
-    // ================= FUNÇÃO DE MODAL GLOBAL PERSONALIZADO =================
     function showInstaModal(title, text, icon, type = 'ok', onConfirm = null) {
         document.getElementById('insta-modal-title').innerText = title;
         document.getElementById('insta-modal-text').innerText = text;
@@ -438,14 +524,13 @@
 
     function closeOverlay(id) { document.getElementById(id).style.display = 'none'; }
 
-    // ================= MÁSCARA DE HORÁRIO PARA INSTAGRAM =================
     function maskHora(i) {
         let v = i.value.replace(/\D/g, '');
         if (v.length > 2) v = v.substring(0, 2) + ':' + v.substring(2, 4);
         i.value = v;
     }
 
-    // ================= LÓGICA PRODUTOS (FIREBASE E CARRINHO) =================
+    // ================= LÓGICA PRODUTOS =================
     const firebaseConfig = {
         apiKey: "AIzaSyBcemxWaUCjkBvxEcxCQGPXC_fSWdP8A34",
         authDomain: "dessa-s-bakery.firebaseapp.com",
@@ -460,10 +545,9 @@
     
     let isAdmin = false;
     let menuItems = [];
-    let cart = [];
+    let cart = {}; 
     let titleClicks = 0;
     
-    // Variáveis para edição
     let editId = null;
     let editImgBase64 = null;
 
@@ -496,7 +580,14 @@
         i.value = "R$ " + v;
     }
 
-    // Função de corte cirúrgico para 1:1 automático
+    function parsePrice(priceStr) {
+        return parseFloat(priceStr.replace('R$ ', '').replace('.', '').replace(',', '.'));
+    }
+
+    function formatPrice(num) {
+        return 'R$ ' + num.toFixed(2).replace('.', ',');
+    }
+
     function cropImageTo1x1(file) {
         return new Promise((resolve) => {
             const reader = new FileReader();
@@ -511,7 +602,6 @@
                     const offsetX = (img.width - size) / 2;
                     const offsetY = (img.height - size) / 2;
                     ctx.drawImage(img, offsetX, offsetY, size, size, 0, 0, size, size);
-                    // Comprime para não estourar o limite do firebase com as multiplas fotos
                     resolve(canvas.toDataURL('image/jpeg', 0.8));
                 };
                 img.src = e.target.result;
@@ -520,7 +610,6 @@
         });
     }
 
-    // Função para puxar dados para edição
     function editItem(id) {
         const item = menuItems.find(i => i.id === id);
         if(item) {
@@ -529,8 +618,6 @@
             document.getElementById('new-desc').value = item.desc;
             document.getElementById('new-status').value = item.status || 'Disponível';
             editId = id;
-            
-            // Mantém array de imagens antigas ou imagem única antiga
             editImgBase64 = item.imgs || item.img; 
             
             const btn = document.getElementById('btn-save');
@@ -574,14 +661,12 @@
 
         let imgDataArray = [];
 
-        // Se o usuário selecionou novas fotos, corta todas para 1:1 e salva
         if (files.length > 0) {
             for (let i = 0; i < files.length; i++) {
                 let croppedImg = await cropImageTo1x1(files[i]);
                 imgDataArray.push(croppedImg);
             }
         } else if (editImgBase64) {
-            // Se for edição e não colocou foto nova, garante que o formato antigo vire array
             imgDataArray = Array.isArray(editImgBase64) ? editImgBase64 : [editImgBase64];
         }
 
@@ -615,29 +700,118 @@
         renderMenu();
     });
 
-    function toggleCart(id) {
-        const idx = cart.indexOf(id);
-        const card = document.getElementById(`card-${id}`);
-        if (idx === -1) {
-            cart.push(id);
-            card.classList.add('selected');
-        } else {
-            cart.splice(idx, 1);
-            card.classList.remove('selected');
+    // ================= LÓGICA DE QUANTIDADE E CARRINHO =================
+    function addCart(id, event) {
+        if (event) event.stopPropagation();
+        if (!cart[id]) cart[id] = 0;
+        cart[id]++;
+        renderMenu();
+        atualizarTotalFlutuante();
+    }
+
+    function removeCart(id, event) {
+        if (event) event.stopPropagation();
+        if (cart[id]) {
+            cart[id]--;
+            if (cart[id] <= 0) delete cart[id];
+            renderMenu();
+            atualizarTotalFlutuante();
         }
     }
 
-    function sendOrder() {
-        if (cart.length === 0) {
-            showInstaModal('Carrinho Vazio', 'Selecione pelo menos um doce para continuar.', '🛒');
+    function atualizarTotalFlutuante() {
+        let total = 0;
+        let qtdItens = 0;
+        for (let id in cart) {
+            const item = menuItems.find(i => i.id === id);
+            if (item) {
+                total += parsePrice(item.price) * cart[id];
+                qtdItens += cart[id];
+            }
+        }
+
+        const divTotal = document.getElementById('floating-total');
+        if (qtdItens > 0) {
+            divTotal.style.display = 'block';
+            divTotal.innerText = 'Total: ' + formatPrice(total);
+            divTotal.classList.remove('pop-anim');
+            void divTotal.offsetWidth; // trigger reflow
+            divTotal.classList.add('pop-anim');
+        } else {
+            divTotal.style.display = 'none';
+        }
+    }
+
+    // ================= FUNÇÕES DO CHECKOUT (PRODUTOS) =================
+    let subtotalValor = 0;
+
+    function abrirCheckoutProdutos() {
+        if (Object.keys(cart).length === 0) {
+            showInstaModal('Carrinho Vazio', 'Selecione pelo menos um doce adicionando quantidades.', '🛒');
             return;
         }
-        let msg = "🧁 *Novo Pedido - Dessa's Bakery*%0A%0AOlá! Gostaria de encomendar:%0A";
-        cart.forEach(id => {
+        document.getElementById('checkout-overlay').style.display = 'flex';
+        calcResumoCheckout();
+    }
+
+    function toggleCheckoutEntrega() {
+        const tipo = document.getElementById('chk-tipo').value;
+        const box = document.getElementById('box-entrega');
+        if (tipo === 'Entrega') {
+            box.style.display = 'block';
+        } else {
+            box.style.display = 'none';
+        }
+        calcResumoCheckout();
+    }
+
+    function calcResumoCheckout() {
+        subtotalValor = 0;
+        for (let id in cart) {
             const item = menuItems.find(i => i.id === id);
-            msg += `%0A✅ *${item.title}* - ${item.price}`;
-        });
-        window.open(`https://wa.me/5515981463360?text=${msg}`);
+            if (item) subtotalValor += parsePrice(item.price) * cart[id];
+        }
+
+        document.getElementById('chk-subtotal').innerText = formatPrice(subtotalValor);
+        document.getElementById('chk-total-geral').innerText = formatPrice(subtotalValor);
+    }
+
+    function enviarPedidoProdutosWhatsapp() {
+        const nome = document.getElementById('chk-nome').value;
+        const tipo = document.getElementById('chk-tipo').value;
+        const end = document.getElementById('chk-end').value;
+        const num = document.getElementById('chk-num').value;
+        const pag = document.getElementById('chk-pagamento').value;
+
+        if (!nome) {
+            showInstaModal('Aviso', 'Preencha seu nome por favor.', '📝');
+            return;
+        }
+        if (tipo === 'Entrega' && (!end || !num)) {
+            showInstaModal('Aviso', 'Preencha endereço e número para a entrega.', '🛵');
+            return;
+        }
+
+        let msg = `🧁 *Novo Pedido - Dessa's Bakery*\n\n`;
+        msg += `*👤 CLIENTE:*\nNome: ${nome}\nTipo: ${tipo}\n`;
+        if(tipo === 'Entrega') {
+            msg += `Endereço: ${end}, ${num}\n`;
+        }
+        msg += `Pagamento: ${pag}\n\n`;
+
+        msg += `*🛍️ DETALHES DO PEDIDO:*\n`;
+        for (let id in cart) {
+            const item = menuItems.find(i => i.id === id);
+            if(item) {
+                msg += `✅ ${cart[id]}x *${item.title}* - ${item.price}\n`;
+            }
+        }
+
+        msg += `\n*🧾 RESUMO:*\n`;
+        msg += `*Total a pagar: ${formatPrice(subtotalValor)}*`;
+
+        window.open(`https://wa.me/5515981463360?text=${encodeURIComponent(msg)}`);
+        closeOverlay('checkout-overlay');
     }
 
     function deleteItem(id) {
@@ -646,7 +820,6 @@
         });
     }
 
-    // Função cirúrgica para abrir o slider de imagens
     function openImageModal(id) {
         const item = menuItems.find(i => i.id === id);
         if(!item) return;
@@ -670,7 +843,6 @@
         menuItems.forEach(item => {
             const itemStatus = item.status || 'Disponível';
             const isEsgotado = itemStatus === 'Esgotado';
-            const isSel = cart.includes(item.id) ? 'selected' : '';
             
             let statusBadge = '';
             if (itemStatus === 'Disponível') {
@@ -681,16 +853,18 @@
                 statusBadge = `<div class="status-badge badge-novo">Novo ✨</div>`;
             }
 
-            // Garante compatibilidade visual do card com banco de dados antigo (img) ou novo (imgs[])
             const itemImgs = item.imgs || (item.img ? [item.img] : []);
             const coverImg = itemImgs.length > 0 ? itemImgs[0] : '';
+            
+            const qtd = cart[item.id] || 0;
+            const isSelClass = qtd > 0 ? 'selected' : '';
 
             const card = document.createElement('div');
-            card.className = `card ${isSel} ${isEsgotado ? 'esgotado' : ''}`;
+            card.className = `card ${isSelClass} ${isEsgotado ? 'esgotado' : ''}`;
             card.id = `card-${item.id}`;
             
             card.innerHTML = `
-                ${!isEsgotado ? `<div class="btn-check" onclick="toggleCart('${item.id}')">✓</div>` : ''}
+                ${qtd > 0 ? `<div class="qty-bubble">${qtd}</div>` : ''}
                 <div class="img-container">
                     <img src="${coverImg}" onclick="openImageModal('${item.id}')">
                     ${statusBadge}
@@ -699,6 +873,11 @@
                     <div class="card-title">${item.title}</div>
                     <div style="font-size:0.7rem; color:#8e8e8e; margin-top:4px; line-height:1.1">${item.desc}</div>
                     <div class="card-price">${item.price}</div>
+                    ${!isEsgotado ? `
+                    <div class="card-actions">
+                        ${qtd > 0 ? `<div class="btn-action minus" onclick="removeCart('${item.id}', event)">-</div>` : ''}
+                        <div class="btn-action add" onclick="addCart('${item.id}', event)">+</div>
+                    </div>` : ''}
                 </div>
                 ${isAdmin ? `
                 <div style="display:flex; border-top:1px solid #eee;">
@@ -710,7 +889,7 @@
         });
     }
 
-    // ================= LÓGICA ENCOMENDAS (AJUSTADA) =================
+    // ================= LÓGICA ENCOMENDAS =================
     function openModal() { document.getElementById('modalEntrega').style.display = 'flex'; }
     function closeModal() { document.getElementById('modalEntrega').style.display = 'none'; }
     
