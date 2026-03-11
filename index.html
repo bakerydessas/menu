@@ -106,8 +106,8 @@
             transform: scale(0.85);
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
-        
-        .btn-gear-float {
+
+        .btn-comandas-float {
             position: fixed;
             bottom: 165px; 
             right: 20px;
@@ -125,7 +125,7 @@
             z-index: 9999;
             transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
         }
-        .btn-gear-float:active { transform: scale(0.85); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .btn-comandas-float:active { transform: scale(0.85); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
 
         /* ================= TELA DELIVERY ================= */
         #produtos-screen {
@@ -135,11 +135,19 @@
 
         #produtos-screen header {
             background: var(--insta-gradient); color: white; padding: 20px;
-            text-align: center; position: sticky; top: 0; z-index: 1000;
+            display: flex; align-items: center; justify-content: center; position: relative;
+            position: sticky; top: 0; z-index: 1000;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         #produtos-screen header h1 { margin: 0; font-size: 1.4rem; letter-spacing: 2px; cursor: pointer; user-select: none; font-weight: 800; }
+
+        .header-btn-gear {
+            background: none; border: none; color: white; cursor: pointer;
+            display: none; padding: 5px; transition: transform 0.2s;
+            position: absolute; right: 20px;
+        }
+        .header-btn-gear:active { transform: scale(0.85); }
 
         /* ======= CABEÇALHO DA LOJA ======= */
         .loja-header {
@@ -319,6 +327,9 @@
 <div id="produtos-screen">
     <header>
         <h1 onclick="handleTitleClick()">DESSA'S CAKE</h1>
+        <button class="header-btn-gear" id="btn-gear-whats" onclick="abrirWhatsConfig()" title="Configurar WhatsApp">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
     </header>
 
     <div class="loja-header">
@@ -351,14 +362,6 @@
             <input type="tel" id="edit-whats-input" placeholder="(11) 99999-9999">
             <button class="btn-insta-blue" onclick="atualizarWhatsLocal()">Salvar</button>
             <button class="btn-insta-link" onclick="closeOverlay('whats-config-overlay')">Cancelar</button>
-        </div>
-    </div>
-
-    <div id="comandas-overlay" class="insta-overlay">
-        <div class="insta-popup" style="max-width: 400px; padding: 15px;">
-            <div style="font-weight: 800; font-size: 1.2rem; margin-bottom: 15px; color: var(--insta-blue);">📋 Comandas</div>
-            <div id="admin-comandas-list" style="max-height: 60vh; overflow-y: auto; text-align: left;">Carregando comandas...</div>
-            <button class="btn-insta-link" onclick="closeOverlay('comandas-overlay')">Fechar</button>
         </div>
     </div>
 
@@ -402,6 +405,18 @@
 
             <button class="btn-insta-blue" onclick="enviarPedidoProdutosWhatsapp()">Confirmar via WhatsApp</button>
             <button class="btn-insta-link" onclick="closeOverlay('checkout-overlay')">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="comandas-overlay" class="insta-overlay">
+        <div class="insta-popup" style="max-width: 400px; width: 95%; max-height: 85vh; display: flex; flex-direction: column; padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div style="font-weight: 800; font-size: 1.2rem;">📋 Comandas</div>
+                <div onclick="closeOverlay('comandas-overlay')" style="cursor: pointer; font-size: 1.2rem; font-weight: bold; color: #8e8e8e;">✕</div>
+            </div>
+            <div id="popup-comandas-list" style="text-align: left; overflow-y: auto; flex-grow: 1;">
+                Carregando comandas...
+            </div>
         </div>
     </div>
 
@@ -472,8 +487,8 @@
         </button>
     </div>
 
-    <button class="btn-gear-float" id="btn-gear-whats" onclick="abrirWhatsConfig()" title="Configurar WhatsApp">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    <button class="btn-comandas-float" id="btn-admin-comandas" onclick="document.getElementById('comandas-overlay').style.display='flex'" title="Ver Comandas">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
     </button>
 
     <button class="btn-voltar-float" onclick="navTo('home')" title="Voltar para Início">
@@ -608,19 +623,18 @@
         document.getElementById('home-screen').style.display = 'none';
         document.getElementById('produtos-screen').style.display = 'none';
         document.getElementById('encomendas-screen').style.display = 'none';
-        document.getElementById('btn-gear-whats').style.display = 'none';
-
+        
         if(screen === 'home') document.getElementById('home-screen').style.display = 'flex';
         if(screen === 'produtos') {
             document.getElementById('produtos-screen').style.display = 'block';
             
-            // Pop-up do WhatsApp e Regra da Engrenagem
+            // Pop-up do WhatsApp
             const hasWhats = localStorage.getItem('cliente_whats');
-            if(!hasWhats) {
+            if(hasWhats) {
+                document.getElementById('btn-gear-whats').style.display = 'block';
+            } else {
                 document.getElementById('btn-gear-whats').style.display = 'none';
                 document.getElementById('whats-overlay').style.display = 'flex';
-            } else {
-                document.getElementById('btn-gear-whats').style.display = 'flex';
             }
             renderMenu(); 
         }
@@ -633,8 +647,8 @@
         const tel = document.getElementById('user-whats-input').value;
         if(tel.length > 8) {
             localStorage.setItem('cliente_whats', tel);
+            document.getElementById('btn-gear-whats').style.display = 'block';
             closeOverlay('whats-overlay');
-            document.getElementById('btn-gear-whats').style.display = 'flex'; // Exibe após salvar
         } else {
             alert("Digite um número válido!");
         }
@@ -652,10 +666,6 @@
             closeOverlay('whats-config-overlay');
             showInstaModal('Atualizado!', 'Número de WhatsApp salvo com sucesso.', '✅');
         }
-    }
-    
-    function abrirModalComandas() {
-        document.getElementById('comandas-overlay').style.display = 'flex';
     }
 
     function showInstaModal(title, text, icon, type = 'ok', onConfirm = null) {
@@ -759,15 +769,8 @@
         if (pass === "1709") {
             isAdmin = true;
             document.getElementById('admin-panel').style.display = 'block';
+            document.getElementById('btn-admin-comandas').style.display = 'flex';
             closeOverlay('login-overlay');
-            
-            // Troca da Engrenagem para Ícone de Comandas (Elegante)
-            const btnGear = document.getElementById('btn-gear-whats');
-            btnGear.style.display = 'flex';
-            btnGear.setAttribute('onclick', 'abrirModalComandas()');
-            btnGear.title = "Ver Comandas";
-            btnGear.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>';
-            
             renderMenu();
             showInstaModal('Bem-vinda!', 'Modo administrador ativado com sucesso.', '👩‍🍳');
         } else {
@@ -1050,14 +1053,14 @@
         const a = hoje.getFullYear();
         const valorFormatado = Math.floor(Number(valor) || 0);
         
-        let numFinal = "";
+        let telSufixo = "";
         if (telefone) {
-            const apenasNumeros = telefone.replace(/\D/g, '');
-            if (apenasNumeros.length >= 4) {
-                numFinal = apenasNumeros.slice(-4);
-            }
+            let telDigits = telefone.replace(/\D/g, '');
+            if(telDigits.length >= 4) telSufixo = telDigits.slice(-4);
+            else telSufixo = telDigits;
         }
-        return `#${inicial}${d}${m}${a}${valorFormatado}${numFinal}`;
+
+        return `#${inicial}${d}${m}${a}${valorFormatado}${telSufixo}`;
     }
 
     let subtotalValor = 0;
@@ -1145,7 +1148,6 @@
         }
 
         let msg = `*Pedido ${comanda}*\n🧁 *Novo Delivery - Dessa's Cake*\n\n`;
-        // Retirado o número do WhatsApp do relatório, conforme solicitado
         msg += `*👤 CLIENTE:*\nNome: ${nome}\nTipo: ${tipo}\n`;
         if(tipo === 'Entrega') msg += `Endereço: ${end}, ${num}\n`;
         msg += `Pagamento: ${pag}\n\n*🛍️ DETALHES DO PEDIDO:*\n`;
@@ -1163,7 +1165,7 @@
 
     // ================= LÓGICA DE COMANDAS ADMIN =================
     function renderComandasAdmin() {
-        const container = document.getElementById('admin-comandas-list');
+        const container = document.getElementById('popup-comandas-list');
         if(!container) return;
         container.innerHTML = '';
 
@@ -1195,12 +1197,15 @@
             card.className = 'comanda-box';
             card.style.background = bgCor;
             card.innerHTML = `
-                <div class="comanda-header" onclick="toggleComandaBody('${ped.id}')">
-                    <div>
+                <div class="comanda-header" style="cursor: pointer;">
+                    <div onclick="toggleComandaBody('${ped.id}')" style="flex-grow: 1;">
                         <strong style="color:var(--insta-blue);">${ped.comandaId}</strong> - ${ped.cliente}
                         <div style="font-size:11px; color:#666;">${dataFormat}</div>
                     </div>
-                    <div style="font-weight:bold;">${formatPrice(ped.total || 0)}</div>
+                    <div style="font-weight:bold; display: flex; align-items: center;">
+                        ${formatPrice(ped.total || 0)}
+                        <button class="btn-comanda-acao" style="background:#ed4956; margin-left: 10px; padding: 6px;" onclick="excluirComandaInteira('${ped.id}', event)" title="Excluir Comanda">🗑️</button>
+                    </div>
                 </div>
                 <div id="body-${ped.id}" style="display:none; margin-top:10px;">
                     <p style="font-size:13px; margin-bottom:10px;">
@@ -1210,14 +1215,11 @@
                     </p>
                     <div style="margin-bottom:10px;">${htmlItens}</div>
                     
-                    <div style="display:flex; gap:10px;">
-                        <select onchange="alterarStatusComanda('${ped.id}', this.value)" style="flex:1; padding:8px; border-radius:5px; border:1px solid #ddd; font-weight:bold;">
-                            <option value="Pendente" ${ped.status === 'Pendente' ? 'selected' : ''}>⏳ Pendente</option>
-                            <option value="Concluído" ${ped.status === 'Concluído' ? 'selected' : ''}>✅ Concluído</option>
-                            <option value="Cancelou" ${ped.status === 'Cancelou' ? 'selected' : ''}>❌ Cancelou</option>
-                        </select>
-                        <button onclick="excluirComandaInteira('${ped.id}')" style="background:#ed4956; color:white; border:none; padding:8px 12px; border-radius:5px; font-weight:bold; cursor:pointer;">Excluir</button>
-                    </div>
+                    <select onchange="alterarStatusComanda('${ped.id}', this.value)" style="padding:8px; border-radius:5px; border:1px solid #ddd; width:100%; font-weight:bold;">
+                        <option value="Pendente" ${ped.status === 'Pendente' ? 'selected' : ''}>⏳ Pendente</option>
+                        <option value="Concluído" ${ped.status === 'Concluído' ? 'selected' : ''}>✅ Concluído</option>
+                        <option value="Cancelou" ${ped.status === 'Cancelou' ? 'selected' : ''}>❌ Cancelou</option>
+                    </select>
                 </div>
             `;
             container.appendChild(card);
@@ -1250,6 +1252,21 @@
         }
     }
 
+    function excluirComandaInteira(pedidoId, event) {
+        if(event) event.stopPropagation();
+        showInstaModal('Excluir Comanda?', 'Tem certeza que deseja apagar esta comanda inteira?', '🗑️', 'confirm', () => {
+            const ped = comandas.find(p => p.id === pedidoId);
+            if(ped && ped.status !== 'Cancelou') {
+                if(ped.itens) {
+                    for(let itemId in ped.itens) {
+                        ajustarEstoque(itemId, ped.itens[itemId].qtd); 
+                    }
+                }
+            }
+            db.ref('pedidos/' + pedidoId).remove();
+        });
+    }
+
     function editarItemComanda(pedidoId, itemId, atualQtd) {
         const novaQtdRaw = prompt(`Nova quantidade:`, atualQtd);
         if(novaQtdRaw !== null && novaQtdRaw !== "") {
@@ -1258,8 +1275,8 @@
             if(!ped) return;
 
             let diff = novaQtd - atualQtd; 
-            let precoItem = parsePrice(ped.itens[itemId].preco);
-            let diffValor = diff * precoItem;
+            let precoUn = parsePrice(ped.itens[itemId].preco);
+            let diffValor = diff * precoUn;
             let novoTotal = (ped.total || 0) + diffValor;
 
             if(novaQtd === 0) {
@@ -1267,10 +1284,10 @@
             } else {
                 db.ref(`pedidos/${pedidoId}/itens/${itemId}`).update({qtd: novaQtd});
             }
-            
-            db.ref(`pedidos/${pedidoId}`).update({total: novoTotal});
 
-            if(ped.status !== 'Cancelou') { ajustarEstoque(itemId, -diff); } // se diff positivo (aumentou), tira do estoque (-diff)
+            db.ref(`pedidos/${pedidoId}`).update({ total: novoTotal });
+
+            if(ped.status !== 'Cancelou') { ajustarEstoque(itemId, -diff); } 
         }
     }
 
@@ -1278,27 +1295,15 @@
         const ped = comandas.find(p => p.id === pedidoId);
         if(!ped) return;
         showInstaModal('Atenção', 'Deseja remover este item do pedido?', '🗑️', 'confirm', () => {
-            let precoItem = parsePrice(ped.itens[itemId].preco);
-            let novoTotal = (ped.total || 0) - (atualQtd * precoItem);
+            let precoUn = parsePrice(ped.itens[itemId].preco);
+            let valorReduzir = atualQtd * precoUn;
+            let novoTotal = (ped.total || 0) - valorReduzir;
             if(novoTotal < 0) novoTotal = 0;
 
             db.ref(`pedidos/${pedidoId}/itens/${itemId}`).remove();
-            db.ref(`pedidos/${pedidoId}`).update({total: novoTotal});
+            db.ref(`pedidos/${pedidoId}`).update({ total: novoTotal });
 
-            if(ped.status !== 'Cancelou') { ajustarEstoque(itemId, atualQtd); } // devolve total
-        });
-    }
-
-    function excluirComandaInteira(pedidoId) {
-        const ped = comandas.find(p => p.id === pedidoId);
-        if(!ped) return;
-        showInstaModal('Atenção', 'Deseja excluir esta comanda inteira permanentemente?', '🗑️', 'confirm', () => {
-            if (ped.status !== 'Cancelou' && ped.itens) {
-                for(let itemId in ped.itens) {
-                    ajustarEstoque(itemId, ped.itens[itemId].qtd);
-                }
-            }
-            db.ref('pedidos/' + pedidoId).remove();
+            if(ped.status !== 'Cancelou') { ajustarEstoque(itemId, atualQtd); } 
         });
     }
 
